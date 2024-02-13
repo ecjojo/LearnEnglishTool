@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Learn English Tools">
+    <meta property="og:type" content="website">
+    <title>Learn English Tools</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+
+    <h1>Learn English Tools</h1>
+    
+    <div>
+        <div>
+
+            <textarea id="inputText" rows="12" placeholder="輸入對話..."></textarea>
+            <br>
+            產生英文對話句子bot <a href="http://poe.com/EnglishBae">▶Poe</a>
+            <br>
+            <button onclick="splitSentences()">Submit</button>
+        </div>
+        <div id="output">
+
+        </div>
+    </div>
+    
+    <hr>
+   
+    <script>
+        function splitSentences() {
+            var inputText = document.getElementById("inputText").value;
+            var sentences = inputText.split('\n\n');
+
+            var outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = "";
+
+            sentences.forEach(function (sentence, index) {
+
+                var button = document.createElement('button');
+                button.className = 'sentence-btn';
+                button.innerText = '▶';
+                button.addEventListener('click', function () {
+                    playTextToSpeech(sentence);
+                });
+
+                var sentenceContainer = document.createElement('div');
+                sentenceContainer.className = 'sentence-container';
+
+                var sentenceText = document.createElement('div');
+                sentenceText.className = 'sentence-text';
+                sentenceText.innerText = sentence;
+
+                sentenceContainer.appendChild(button);
+                sentenceContainer.appendChild(sentenceText);
+
+                outputDiv.appendChild(sentenceContainer);
+            });
+
+        }
+
+        function playTextToSpeech(text, audioElement, callback) {
+            var url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
+
+            fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537'
+                }
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    var urlObject = URL.createObjectURL(blob);
+                    audioElement.src = urlObject;
+                    audioElement.play();
+                    audioElement.onended = function () {
+                        if (callback) {
+                            callback();
+                        }
+                    };
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
