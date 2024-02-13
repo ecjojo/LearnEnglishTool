@@ -16,14 +16,15 @@ a{
 }
 
 button {
-    padding: 10px 20px;
+    padding: 5px 20px;
     font-size: 12px;
     background-color: #4c8caf;
     color: white;
     border: none; 
     cursor: pointer; 
-    border-radius: 60px ; 
+    border-radius: 50px ; 
     margin-top: 5px;
+    margin-bottom: 5px;
     margin-right: 10px;
 }
 
@@ -36,4 +37,3 @@ button {
     display: flex;
     align-items: center;
   }
-  

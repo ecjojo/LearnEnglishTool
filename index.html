@@ -26,10 +26,13 @@
         <br>
         <button onclick="splitSentences()">Submit</button>
     </div>
+    <hr>
+
     <div id="output">
     </div>
-    <hr>
+
     <script>
+
         function splitSentences() {
             var inputText = document.getElementById("inputText").value;
             var sentences = inputText.split('\n\n');
@@ -43,7 +46,7 @@
                 button.className = 'sentence-btn';
                 button.innerText = '▶';
                 button.addEventListener('click', function () {
-                    playTextToSpeech(sentence);
+                    speakText(sentence);
                 });
 
                 var sentenceContainer = document.createElement('div');
@@ -60,25 +63,14 @@
             });
         }
 
-        function playTextToSpeech(text) {
-        var audioElement = new Audio();
+        function speakText(text) {
+            var speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.lang = 'en-US'; // 設置語言，這裡是英文（美國）
+            speech.rate = 1.0; // 設置速率，1.0 表示正常速率
 
-        var url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
-
-        fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537'
-            }
-        }).then(function (response) {
-            return response.blob();
-        }).then(function (blob) {
-            audioElement.src = URL.createObjectURL(blob);
-            audioElement.play();
-        })
-        .catch(error => {
-                console.error('Error:', error);
-            });
-    }
+            speechSynthesis.speak(speech);
+        }
     </script>
 </body>
 
