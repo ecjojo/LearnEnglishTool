@@ -18,7 +18,7 @@
 
 
     <h1>Learn English Tools</h1>
-    
+
     <div>
         <div>
 
@@ -32,9 +32,9 @@
 
         </div>
     </div>
-    
+
     <hr>
-   
+
     <script>
         function splitSentences() {
             var inputText = document.getElementById("inputText").value;
@@ -67,7 +67,9 @@
 
         }
 
-        function playTextToSpeech(text, audioElement, callback) {
+        function playTextToSpeech(text) {
+            var audioElement = new Audio();
+
             var url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q=' + encodeURIComponent(text);
 
             fetch(url, {
@@ -80,11 +82,6 @@
                     var urlObject = URL.createObjectURL(blob);
                     audioElement.src = urlObject;
                     audioElement.play();
-                    audioElement.onended = function () {
-                        if (callback) {
-                            callback();
-                        }
-                    };
                 })
                 .catch(error => {
                     console.error('Error:', error);
