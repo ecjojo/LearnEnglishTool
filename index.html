@@ -20,7 +20,7 @@
     <h1>Learn English Tools</h1>
 
     <div>
-        <textarea id="inputText" rows="12" placeholder="輸入對話..."></textarea>
+        <textarea id="inputText" rows="15" placeholder="輸入對話..."></textarea>
         <br>
         Generate English conversation sentences bot <a href="http://poe.com/EnglishBae">▶Poe</a>
         <br>
@@ -35,7 +35,7 @@
 
         function splitSentences() {
             var inputText = document.getElementById("inputText").value;
-            var sentences = inputText.split('\n\n');
+            var sentences = inputText.split('\n');
 
             var outputDiv = document.getElementById("output");
             outputDiv.innerHTML = "";
