@@ -15,23 +15,60 @@
 </head>
 
 <body>
+    <h1>Learn English Tools @ecjojo</h1>
 
+    <div style="display:flex; ">
+        <textarea id="inputText" rows="25" placeholder="Enter The sentences you would like to learn..."></textarea>
+        <div style="padding-left: 20px;">
+            <label for="cameraSelect">Camera:</label>
+            <select id="cameraSelect"></select>
 
-    <h1>Learn English Tools</h1>
+            <button id="recordButton" class="blueButton" onclick="toggleButton('recordButton')">Record</button>
+            <button id="stopButton" class="grayButton" onclick="toggleButton('stopButton')" disabled>Stop</button>
+            <button id="playButton" class="grayButton" onclick="toggleButton('playButton')" disabled>Play</button>
 
-    <div>
-        <textarea id="inputText" rows="15" placeholder="輸入對話..."></textarea>
-        <br>
-        Generate English conversation sentences bot <a href="http://poe.com/EnglishBae">▶Poe</a>
-        <br>
-        <button onclick="splitSentences()">Submit</button>
+            <video autoplay="true" id="videoElement"></video>
+            <div id="subtitle"></div>
+
+        </div>
+
     </div>
+    <br>
+    If you need to generate English conversation sentences <a href="http://poe.com/EnglishBae">▶Poe</a>
+    <br>
+    <button onclick="splitSentences()">Submit</button>
     <hr>
 
     <div id="output">
     </div>
 
     <script>
+        function toggleButton(buttonId) {
+            var button = document.getElementById(buttonId);
+
+            if (buttonId === 'recordButton') {
+                document.getElementById('recordButton').disabled = true;
+                document.getElementById('recordButton').classList.add('grayButton');
+                document.getElementById('recordButton').classList.remove('blueButton');
+                document.getElementById('stopButton').disabled = false;
+                document.getElementById('stopButton').classList.remove('grayButton');
+                document.getElementById('stopButton').classList.add('blueButton');
+            } else if (buttonId === 'stopButton') {
+                document.getElementById('stopButton').disabled = true;
+                document.getElementById('stopButton').classList.add('grayButton');
+                document.getElementById('stopButton').classList.remove('blueButton');
+                document.getElementById('playButton').disabled = false;
+                document.getElementById('playButton').classList.remove('grayButton');
+                document.getElementById('playButton').classList.add('blueButton');
+            } else if (buttonId === 'playButton') {
+                document.getElementById('playButton').disabled = true;
+                document.getElementById('playButton').classList.add('grayButton');
+                document.getElementById('playButton').classList.remove('blueButton');
+                document.getElementById('recordButton').disabled = false;
+                document.getElementById('recordButton').classList.remove('grayButton');
+                document.getElementById('recordButton').classList.add('blueButton');
+            }
+        }
 
         function splitSentences() {
             var inputText = document.getElementById("inputText").value;
@@ -41,25 +78,28 @@
             outputDiv.innerHTML = "";
 
             sentences.forEach(function (sentence, index) {
+                var modifiedSentence = sentence.replace(/Person 1:|Person 2:/g, '');
 
-                var button = document.createElement('button');
-                button.className = 'sentence-btn';
-                button.innerText = '▶';
-                button.addEventListener('click', function () {
-                    speakText(sentence);
-                });
+                if (modifiedSentence.trim() !== '') {
+                    var button = document.createElement('button');
+                    button.className = 'sentence-btn';
+                    button.innerText = '▶';
+                    button.addEventListener('click', function () {
+                        speakText(modifiedSentence);
+                    });
 
-                var sentenceContainer = document.createElement('div');
-                sentenceContainer.className = 'sentence-container';
+                    var sentenceContainer = document.createElement('div');
+                    sentenceContainer.className = 'sentence-container';
 
-                var sentenceText = document.createElement('div');
-                sentenceText.className = 'sentence-text';
-                sentenceText.innerText = sentence;
+                    var sentenceText = document.createElement('div');
+                    sentenceText.className = 'sentence-text';
+                    sentenceText.innerText = modifiedSentence;
 
-                sentenceContainer.appendChild(button);
-                sentenceContainer.appendChild(sentenceText);
+                    sentenceContainer.appendChild(button);
+                    sentenceContainer.appendChild(sentenceText);
 
-                outputDiv.appendChild(sentenceContainer);
+                    outputDiv.appendChild(sentenceContainer);
+                }
             });
         }
 
@@ -71,6 +111,108 @@
 
             speechSynthesis.speak(speech);
         }
+
+        var video = document.getElementById("videoElement");
+        var cameraSelect = document.getElementById("cameraSelect");
+
+        var subtitleElement = document.getElementById("subtitle");
+
+        // 创建语音识别对象
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "en-US"; // 设置语音识别的语言
+
+        // 获取可用的摄像头设备列表
+        navigator.mediaDevices.enumerateDevices()
+            .then(function (devices) {
+                devices.forEach(function (device) {
+                    // 如果设备类型是摄像头，添加到选择菜单中
+                    if (device.kind === 'videoinput') {
+                        var option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.text = device.label || '摄像头 ' + (cameraSelect.length + 1);
+                        cameraSelect.appendChild(option);
+                    }
+                });
+            })
+            .catch(function (error) {
+                console.log("获取摄像头设备列表出错: ", error);
+            });
+
+        // 当选择菜单的值发生变化时，切换摄像头
+        cameraSelect.addEventListener('change', function () {
+            var selectedDeviceId = cameraSelect.value;
+            var constraints = { video: { deviceId: selectedDeviceId } };
+
+            // 请求使用选择的摄像头
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function (stream) {
+                    video.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.log("切换摄像头出错: ", error);
+                });
+        });
+
+        // 语音识别结束时的回调函数
+        recognition.onresult = function (event) {
+            var result = event.results[event.results.length - 1][0].transcript;
+            subtitleElement.textContent = result;
+        };
+
+        var startButton = document.getElementById("recordButton");
+        startButton.addEventListener("click", function () {
+            recognition.start();
+        });
+
+        // 录音和播放
+        var chunks = []; // 保存录制的音频数据
+        var mediaRecorder; // 声明 MediaRecorder 变量
+
+        // 点击录音按钮开始录制
+        var recordButton = document.getElementById("recordButton");
+        recordButton.addEventListener("click", function () {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function (stream) {
+                    mediaRecorder = new MediaRecorder(stream);
+                    chunks = []; // 清空之前的录音数据
+
+                    mediaRecorder.addEventListener("dataavailable", function (event) {
+                        if (event.data.size > 0) {
+                            chunks.push(event.data);
+                        }
+                    });
+
+                    mediaRecorder.addEventListener("stop", function () {
+                        var audioBlob = new Blob(chunks, { type: "audio/webm" });
+                        var audioURL = URL.createObjectURL(audioBlob);
+
+                        var audio = new Audio(audioURL);
+                        audio.controls = true;
+                        audio.autoplay = false;
+
+                        var playButton = document.getElementById("playButton");
+                        playButton.addEventListener("click", function () {
+                            audio.play();
+                        });
+
+                        document.body.appendChild(audio);
+                    });
+
+                    mediaRecorder.start();
+                    recordButton.disabled = true;
+                })
+                .catch(function (error) {
+                    console.log("录音出错: ", error);
+                });
+        });
+
+        // 点击停止录音按钮停止录制
+        var stopButton = document.getElementById("stopButton");
+        stopButton.addEventListener("click", function () {
+            mediaRecorder.stop();
+            recordButton.disabled = false;
+        });
+
     </script>
 </body>
 
