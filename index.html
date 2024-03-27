@@ -43,6 +43,41 @@
     </div>
 
     <script>
+        // 在需要翻译的元素上添加mouseover事件监听器
+document.addEventListener('mouseover', function(e) {
+    var target = e.target;
+
+    // 检查是否是需要翻译的元素，比如文本节点
+    if (target.nodeName === 'DIV' || target.nodeName === 'SPAN' || target.nodeName === 'P') {
+        var text = target.innerText;
+
+        // 调用Google Translate API进行翻译
+        fetch('https://translation.googleapis.com/language/translate/v2?key=YOUR_API_KEY&q=' + text + '&source=en&target=zh-CN')
+            .then(response => response.json())
+            .then(data => {
+                var translation = data.data.translations[0].translatedText;
+
+                // 创建tooltip元素并显示翻译结果
+                var tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.innerText = translation;
+
+                // 设置tooltip位置
+                tooltip.style.top = e.clientY + 'px';
+                tooltip.style.left = e.clientX + 'px';
+
+                // 添加tooltip到页面
+                document.body.appendChild(tooltip);
+
+                // 鼠标移开时移除tooltip
+                target.addEventListener('mouseout', function() {
+                    tooltip.remove();
+                });
+            })
+            .catch(error => console.error('翻译出错: ', error));
+    }
+});
+
         function toggleButton(buttonId) {
             var button = document.getElementById(buttonId);
 
